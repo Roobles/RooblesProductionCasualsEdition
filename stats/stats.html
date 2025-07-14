@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LOL, stats</title>
+    <link href="./bootstrap.min.css" rel="stylesheet" />
+    <style>
+      body {
+        color: #000;
+        background: #FFF;
+      }
+    </style>
+    <script type="text/javascript" src="./stats.js"></script>
+    <script>
+      function createStatElement(elementType, elementId = undefined, elementClasses = []) {
+        const elem = document.createElement(elementType);
+
+        if(elementId) {
+          elem.Id = elementId;
+        }
+
+        for(const clss of elementClasses) {
+          elem.classList.add(clss);
+        }
+
+        return elem;
+      }
+
+      function createStatDiv(elementId = undefined, elementClasses = []) {
+        return createStatElement("div", elementId, elementClasses);
+      }
+
+      function createStatItemDiv(innerContent) {
+        const statDiv = createStatDiv(undefined, ["p-2"]);
+        statDiv.append(innerContent);
+
+        return statDiv;
+      }
+
+      function setText() {
+        const statsData = JSON.parse(statDataTxt);
+        setHeader(statsData);
+      }
+
+      function setStatSection(elementId, statsVal) {
+        // TODO: Exapand this, pls.
+        document.getElementById(elementId).innerHTML = statsVal;
+      }
+
+      function setHeader(statsData) {
+        const leftTeam = statsData.teams[0];
+        const rightTeam = statsData.teams[1];
+
+        setStatSection("LeftTeamNameCont", leftTeam.name);
+        setStatSection("LeftTeamScoreCont", leftTeam.score);
+
+        setStatSection("RightTeamNameCont", rightTeam.name);
+        setStatSection("RightTeamScoreCont", rightTeam.score);
+
+
+        const statRoot = document.getElementById("statsRoot");
+        for(const player of leftTeam.players) {
+          statRoot.append(createPlayerRow(player));
+        }
+      }
+
+      function createPlayerRow(playerObj) {
+        const containerDiv = createStatDiv("foo", ["col", "d-flex", "flex-row"]);
+
+        containerDiv.append(createStatItemDiv(playerObj.name));
+        containerDiv.append(createStatItemDiv(playerObj.kills));
+        containerDiv.append(createStatItemDiv(playerObj.assists));
+        containerDiv.append(createStatItemDiv(playerObj.deaths));
+        containerDiv.append(createStatItemDiv(playerObj.kdr));
+        containerDiv.append(createStatItemDiv(playerObj.adr));
+
+        return containerDiv;
+      }
+    </script>
+  </head>
+  <body onload="setText()">
+    <h1 id="MainHeader"></h1>
+    <div id="statsRoot" class="container-fluid">
+      <!-- Row #1: Team Names & Score -->
+      <div id="TeamsRow" class="row">
+        <div id="LeftTeamCol" class="col d-flex flex-row justify-content-between">
+          <div id="LeftTeamNameCont" class="p-2"></div>
+          <div id="LeftTeamScoreCont" class="p-2"></div>
+        </div>
+        <div id="RightTeamCol" class="col d-flex flex-row justify-content-between">
+          <div id="RightTeamNameCont" class="p-2"></div>
+          <div id="RightTeamScoreCont" class="p-2"></div>
+        </div>
+      </div>
+      <!-- Row #2: Legend -->
+      <div id="LegendRow" class="row">
+        <div class="col"></div>
+        <div id="LeftLegendCol" class="col d-flex flex-row">
+          <div class="p-2">Kills</div>
+          <div class="p-2">Assists</div>
+          <div class="p-2">Deaths</div>
+          <div class="p-2">K/D</div>
+          <div class="p-2">ADR</div>
+        </div>
+        <div class="col"></div>
+        <div id="RightLegendCol" class="col d-flex flex-row justify-content-">
+          <div class="p-2">Kills</div>
+          <div class="p-2">Assists</div>
+          <div class="p-2">Deaths</div>
+          <div class="p-2">K/D</div>
+          <div class="p-2">ADR</div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
