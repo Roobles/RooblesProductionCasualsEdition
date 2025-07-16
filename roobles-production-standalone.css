@@ -2,7 +2,7 @@ body {
   cursor: progress;
   color: #3F225A;
   font-family: Arial, sans-serif;
-  background-image: url("rpsbg.png");
+  background-image: url("./media/rpsbg.png");
   padding: 0px;
   margin: 0px;
   height: 100%
@@ -105,7 +105,7 @@ span .purple {
   font-size: 10pt;
   font-weight: 300;
   line-height: 1.15;
-  background-image: url("vtbg.png");
+  background-image: url("./media/vtbg.png");
   background-position: 50px 110px;
   background-attachment: fixed;
 

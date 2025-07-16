@@ -1,7 +1,7 @@
 Dim ratz, ratzSet, ratzChance
 Dim matchRegex, tournRegex, coreRegexVal, quoteRegex
-Dim winWidth, winHeight, inputForm, outputForm, scriptDir, logoScript, statScript, stdOutFile, ratzFile, statsFile
-Dim defaultDir, gitBash, logoSaveScriptName, statGetScriptName, stdOutFileName, ratzFileName
+Dim winWidth, winHeight, inputForm, outputForm, scriptDir, mediaDir, statsDir, logoScript, statScript, stdOutFile, ratzFile, statsFile
+Dim logoSaveScriptName, statGetScriptName, stdOutFileName, ratzFileName
 Dim faceitIdType
 Const faceit_type_unknown = 0, faceit_type_match = 1, faceit_type_tourn = 2
 Const ForReading = 1, ForAppending = 8
@@ -9,8 +9,6 @@ Const ForReading = 1, ForAppending = 8
 winWidth = 1550
 winHeight = 1000
 
-defaultDir = "C:\tmp\logo"
-gitBash = "C:\Program Files\Git\bin\bash.exe"
 logoSaveScriptName = "save-team-logo.sh"
 statGetScriptName = "get-match-stats.sh"
 stdOutFileName = "stdout.txt"
@@ -46,11 +44,13 @@ End With
 faceitIdType = faceit_type_unknown
 
 scriptDir = CreateObject("Scripting.FileSystemObject").GetParentFolderName(document.location.pathname)
+mediaDir = scriptDir + "\media"
+statsDir = scriptDir + "\stats"
 logoScript = scriptDir + "\" + logoSaveScriptName
 statScript = scriptDir + "\" + statGetScriptName
 stdOutFile = scriptDir + "\" + stdOutFileName
-ratzFile = scriptDir + "\" + ratzFileName
-statsFile = scriptDir + "\stats\stats.js"
+ratzFile = mediaDir + "\" + ratzFileName
+statsFile = statsDir + "\stats.js"
 ratz = Array(0)
 ratzSet = false
 ratzChance = 3
@@ -61,7 +61,7 @@ Sub Window_OnLoad
   set inputForm = document.forms.InputForm
   set outputForm = document.forms.OutputForm
 
-  inputForm.logoDir.value = defaultDir
+  inputForm.logoDir.value = defaultLogoSaveFolder
 
   ClearOutput
   EnableInput
@@ -165,7 +165,7 @@ Sub RunShellScript(scriptCmd)
   Dim Shell, rtrnCode, ctlCmd
   Dim intervalHandle
 
-  ctlCmd = """" + gitBash + """ --login -c '" + scriptCmd + "'"
+  ctlCmd = """" + gitBashExecutable + """ --login -c '" + scriptCmd + "'"
 
   AppendLineToOutput "<br />" + InsertSyntaxHighlighting(ctlCmd) + "<br />"
 
