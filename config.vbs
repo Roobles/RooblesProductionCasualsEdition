@@ -1,3 +1,3 @@
-defaultLogoSaveFolder = "C:\tmp\logo"
+defaultLogoSaveFolder = ""
 
-gitBashExecutable = "C:\Program Files\Git\bin\bash.exe"
+gitBashExecutable = ""
