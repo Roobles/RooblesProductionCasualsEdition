@@ -1,3 +1,4 @@
+' ------------------ Variables
 Dim ratz, ratzSet, ratzChance
 Dim matchRegex, tournRegex, coreRegexVal, quoteRegex
 Dim winWidth, winHeight, inputForm, outputForm, scriptDir, mediaDir, statsDir, logoScript, statScript, stdOutFile, ratzFile, statsFile
@@ -55,6 +56,8 @@ ratz = Array(0)
 ratzSet = false
 ratzChance = 3
 
+
+' ------------------ Main
 Sub Window_OnLoad
   window.resizeto winWidth,winHeight
 
@@ -67,15 +70,125 @@ Sub Window_OnLoad
   EnableInput
 End Sub
 
-Sub BrowseForLogoDir
-  Dim browseResult
-  browseResult = PickFolder(Nothing, "Set a location for saving team logos:")
 
-  If browseResult <> "" Then
-    inputForm.logoDir.value = browseResult
-  End If
+' ------------------ UI
+Sub EnableInput
+  document.body.style.cursor = "auto"
+
+  EnableInputElement inputForm.faceitId
+  EnableInputElement inputForm.logoDir
+  EnableInputElement inputForm.browseDir
+  EnableInputElement inputForm.saveLogoButton
+  EnableInputElement inputForm.getStatsButton
+  EnableInputElement outputForm.clearOutputBtn
+
+  EnableSubmit
 End Sub
 
+Sub EnableSubmit
+  inputForm.saveLogoButton.disabled = Not ValidateDownloadLogos
+  inputForm.getStatsButton.disabled = Not ValidateGetMatchStats
+End Sub
+
+Sub DisableInput
+  document.body.style.cursor = "progress"
+
+  DisableInputElement inputForm.faceitId
+  DisableInputElement inputForm.logoDir
+  DisableInputElement inputForm.browseDir
+  DisableInputElement inputForm.saveLogoButton
+  DisableInputElement inputForm.getStatsButton
+  DisableInputElement outputForm.clearOutputBtn
+End Sub
+
+Function ValidateDownloadLogos
+  Dim faceitId, fieldLabel, baseLabel
+  Dim labelSuffix, isValid
+
+  faceitId = inputForm.faceitId.value
+  set fieldLabel = document.getElementById("faceitIdLabel")
+  baseLabel = "FaceIT Id"
+
+  If matchRegex.Test(faceitId) Then
+    isValid = true 
+    labelSuffix = " (Match):"
+    faceitIdType = faceit_type_match
+
+  ElseIf tournRegex.Test(faceitId) Then
+    isValid = true
+    labelSuffix = " (Tournament):"
+    faceitIdType = faceit_type_tourn
+
+  Else
+    isValid = false
+    labelSuffix = ":"
+    faceitIdType = faceit_type_unknown 
+  End If
+
+  fieldLabel.innerHtml = baseLabel + labelSuffix
+  ValidateDownloadLogos = isValid
+End Function
+
+Function ValidateGetMatchStats
+  Dim faceitId
+  faceitId = inputForm.faceitId.value
+
+  ValidateGetMatchStats = matchRegex.Test(faceitId)
+End Function
+
+
+' ------------------ Utility
+Function PickFolder(rootFolder, promptDescription)
+    Dim shell, oFldr, options
+    Set shell = CreateObject("Shell.Application")
+
+    options = &H0001 + &H0004 + &H0010 + &H0020 + &H0040 + &H0100
+    Set oFldr = shell.BrowseForFolder(0, promptDescription, options, rootFolder)
+    If (Not oFldr Is Nothing) Then
+        PickFolder = oFldr.Self.Path
+    Else
+        PickFolder = ""
+    End If
+    Set shell = Nothing
+    Set oFldr = Nothing
+End Function
+
+Sub RunShellScript(scriptCmd)
+  Dim Shell, rtrnCode, ctlCmd
+  Dim intervalHandle
+
+  ctlCmd = """" + gitBashExecutable + """ --login -c '" + scriptCmd + "'"
+
+  AppendLineToOutput "<br />" + InsertSyntaxHighlighting(ctlCmd) + "<br />"
+
+  DisableInput
+  Set Shell=CreateObject("wscript.shell")
+    intervalHandle = window.setInterval("UpdateOutput", 1000)
+    Shell.run ctlCmd, 0, True
+    window.clearInterval intervalHandle 
+  Set Shell=Nothing
+
+  InjectRat
+  EnableInput
+End Sub
+
+Sub EnableInputElement(element)
+  element.disabled = false
+  element.style.cursor = "auto"
+End Sub
+
+Sub DisableInputElement(element)
+  element.disabled = true
+  element.style.cursor = "progress"
+End Sub
+
+Function InsertSyntaxHighlighting(outputTxt)
+  
+  InsertSyntaxHighlighting = argRegex.Replace(quoteRegex.Replace(outputTxt, "<span class=""blue"">$1</span>"), "<span class=""lightyellow"">$1</span> ")
+End Function
+
+
+' ------------------ Output 
 Sub AppendLineToOutput(outputData)
   Const ForReading = 1
   Const ForAppending = 8
@@ -119,6 +232,8 @@ Sub ClearOutput
   Set fso = Nothing
 End Sub
 
+
+' ------------------ Logos
 Sub SaveLogos 
   Dim scriptCmd
   Dim faceitId, logoDir, faceitType
@@ -147,6 +262,17 @@ Sub SaveLogos
   RunShellScript scriptCmd
 End Sub
 
+Sub BrowseForLogoDir
+  Dim browseResult
+  browseResult = PickFolder(Nothing, "Set a location for saving team logos:")
+
+  If browseResult <> "" Then
+    inputForm.logoDir.value = browseResult
+  End If
+End Sub
+
+
+' ------------------ Stats
 Sub GetStats
   Dim scriptCmd, faceitId
 
@@ -161,114 +287,8 @@ Sub GetStats
   RunShellScript scriptCmd
 End Sub
 
-Sub RunShellScript(scriptCmd)
-  Dim Shell, rtrnCode, ctlCmd
-  Dim intervalHandle
 
-  ctlCmd = """" + gitBashExecutable + """ --login -c '" + scriptCmd + "'"
-
-  AppendLineToOutput "<br />" + InsertSyntaxHighlighting(ctlCmd) + "<br />"
-
-  DisableInput
-  Set Shell=CreateObject("wscript.shell")
-    intervalHandle = window.setInterval("UpdateOutput", 1000)
-    Shell.run ctlCmd, 0, True
-    window.clearInterval intervalHandle 
-  Set Shell=Nothing
-
-  InjectRat
-  EnableInput
-End Sub
-
-Function PickFolder(rootFolder, promptDescription)
-    Dim shell, oFldr, options
-    Set shell = CreateObject("Shell.Application")
-
-    options = &H0001 + &H0004 + &H0010 + &H0020 + &H0040 + &H0100
-    Set oFldr = shell.BrowseForFolder(0, promptDescription, options, rootFolder)
-    If (Not oFldr Is Nothing) Then
-        PickFolder = oFldr.Self.Path
-    Else
-        PickFolder = ""
-    End If
-    Set shell = Nothing
-    Set oFldr = Nothing
-End Function
-
-Function ValidateDownloadLogos
-  Dim faceitId, fieldLabel, baseLabel
-  Dim labelSuffix, isValid
-
-  faceitId = inputForm.faceitId.value
-  set fieldLabel = document.getElementById("faceitIdLabel")
-  baseLabel = "FaceIT Id"
-
-  If matchRegex.Test(faceitId) Then
-    isValid = true 
-    labelSuffix = " (Match):"
-    faceitIdType = faceit_type_match
-
-  ElseIf tournRegex.Test(faceitId) Then
-    isValid = true
-    labelSuffix = " (Tournament):"
-    faceitIdType = faceit_type_tourn
-
-  Else
-    isValid = false
-    labelSuffix = ":"
-    faceitIdType = faceit_type_unknown 
-  End If
-
-  fieldLabel.innerHtml = baseLabel + labelSuffix
-  ValidateDownloadLogos = isValid
-End Function
-
-Function ValidateGetMatchStats
-  Dim faceitId
-  faceitId = inputForm.faceitId.value
-
-  ValidateGetMatchStats = matchRegex.Test(faceitId)
-End Function
-
-Sub EnableInputElement(element)
-  element.disabled = false
-  element.style.cursor = "auto"
-End Sub
-
-Sub DisableInputElement(element)
-  element.disabled = true
-  element.style.cursor = "progress"
-End Sub
-
-Sub EnableInput
-  document.body.style.cursor = "auto"
-
-  EnableInputElement inputForm.faceitId
-  EnableInputElement inputForm.logoDir
-  EnableInputElement inputForm.browseDir
-  EnableInputElement inputForm.saveLogoButton
-  EnableInputElement inputForm.getStatsButton
-  EnableInputElement outputForm.clearOutputBtn
-
-  EnableSubmit
-End Sub
-
-Sub EnableSubmit
-  inputForm.saveLogoButton.disabled = Not ValidateDownloadLogos
-  inputForm.getStatsButton.disabled = Not ValidateGetMatchStats
-End Sub
-
-Sub DisableInput
-  document.body.style.cursor = "progress"
-
-  DisableInputElement inputForm.faceitId
-  DisableInputElement inputForm.logoDir
-  DisableInputElement inputForm.browseDir
-  DisableInputElement inputForm.saveLogoButton
-  DisableInputElement inputForm.getStatsButton
-  DisableInputElement outputForm.clearOutputBtn
-End Sub
-
+' ------------------ Rats
 Function GetRatArray
   If ratzSet Then
     GetRatArray = ratz
@@ -310,8 +330,3 @@ Sub TryInjectRat(rChance)
 
   InjectRat
 End Sub
-
-Function InsertSyntaxHighlighting(outputTxt)
-  
-  InsertSyntaxHighlighting = argRegex.Replace(quoteRegex.Replace(outputTxt, "<span class=""blue"">$1</span>"), "<span class=""lightyellow"">$1</span> ")
-End Function
