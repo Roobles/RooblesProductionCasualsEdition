@@ -1,3 +1,2 @@
-defaultLogoSaveFolder = ""
-
-gitBashExecutable = ""
+defaultLogoSaveFolder=""
+gitBashExecutable =""

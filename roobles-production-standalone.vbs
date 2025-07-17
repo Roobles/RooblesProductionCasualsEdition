@@ -1,11 +1,12 @@
 ' ------------------ Variables
 Dim ratz, ratzSet, ratzChance
 Dim matchRegex, tournRegex, coreRegexVal, quoteRegex
-Dim winWidth, winHeight, inputForm, outputForm, scriptDir, mediaDir, statsDir, logoScript, statScript, stdOutFile, ratzFile, statsFile
+Dim winWidth, winHeight, inputForm, outputForm, scriptDir, mediaDir, statsDir
+Dim logoScript, statScript, stdOutFile, ratzFile, statsFile, configFile
 Dim logoSaveScriptName, statGetScriptName, stdOutFileName, ratzFileName
 Dim faceitIdType
 Const faceit_type_unknown = 0, faceit_type_match = 1, faceit_type_tourn = 2
-Const ForReading = 1, ForAppending = 8
+Const ForReading = 1, ForWriting = 2, ForAppending = 8
 
 winWidth = 1550
 winHeight = 1000
@@ -52,6 +53,7 @@ statScript = scriptDir + "\" + statGetScriptName
 stdOutFile = scriptDir + "\" + stdOutFileName
 ratzFile = mediaDir + "\" + ratzFileName
 statsFile = statsDir + "\stats.js"
+configFile = scriptDir + "\config.vbs"
 ratz = Array(0)
 ratzSet = false
 ratzChance = 3
@@ -187,11 +189,50 @@ Function InsertSyntaxHighlighting(outputTxt)
   InsertSyntaxHighlighting = argRegex.Replace(quoteRegex.Replace(outputTxt, "<span class=""blue"">$1</span>"), "<span class=""lightyellow"">$1</span> ")
 End Function
 
+' ------------------ Config
+Sub SaveConfig(logoDir, gitbashExe)
+
+  Dim fso, fileHandle
+  Set fso = CreateObject("Scripting.FileSystemObject")
+  Set fileHandle = fso.OpenTextFile(configFile, ForWriting, True)
+
+    fileHandle.WriteLine BuildConfigLine("defaultLogoSaveFolder", logoDir)
+    fileHandle.WriteLine BuildConfigLine("gitBashExecutable ", gitbashExe)
+
+  fileHandle.Close
+  Set fileHandle = Nothing
+  Set fso = Nothing
+End Sub
+
+Function IsUnset(checkVal)
+  IsUnset = IsEmpty(checkVal) or IsNull(checkVal) or checkVal = "" 
+End Function
+
+Function GetConfigValue(configVarName, submittedValue)
+  Dim currentValue
+  Execute("currentValue = " + configVarName)
+
+  If IsUnset(submittedValue) Then
+    GetConfigValue = currentValue
+  Else
+    GetConfigValue = submittedValue
+  End If
+End Function
+
+Function BuildConfigLine(configVarName, submittedValue)
+  Dim configVal
+
+  configVal = GetConfigValue(configVarName, submittedValue)
+  If VarType(configVal) = vbString Then
+    configVal = """" + configVal + """"
+  End If
+
+  BuildConfigLine = configVarName + "=" + configVal
+End Function
+
 
 ' ------------------ Output 
 Sub AppendLineToOutput(outputData)
-  Const ForReading = 1
-  Const ForAppending = 8
 
   Dim fso, fileHandle
   Set fso = CreateObject("Scripting.FileSystemObject")
@@ -268,6 +309,7 @@ Sub BrowseForLogoDir
 
   If browseResult <> "" Then
     inputForm.logoDir.value = browseResult
+    SaveConfig browseResult, Null
   End If
 End Sub
 
