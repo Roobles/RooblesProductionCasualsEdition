@@ -140,6 +140,14 @@ End Function
 
 
 ' ------------------ Utility
+Function IsUnset(checkVal)
+  IsUnset = IsEmpty(checkVal) or IsNull(checkVal) or checkVal = "" 
+End Function
+
+Sub AlertError(errorMessage)
+  MsgBox errorMessage, vbCritital, "Error"
+End Sub
+
 Function PickFolder(rootFolder, promptDescription)
     Dim shell, oFldr, options
     Set shell = CreateObject("Shell.Application")
@@ -155,9 +163,23 @@ Function PickFolder(rootFolder, promptDescription)
     Set oFldr = Nothing
 End Function
 
+Function AssertBash()
+  If IsUnset(gitBashExecutable) Then
+    AlertError "Missing configuration for gitbash executable." + vbCrLf + "Please update the configuration and restart this app."
+    AssertBash = false
+    Exit Function
+  End If
+
+  AssertBash = true
+End Function
+
 Sub RunShellScript(scriptCmd)
   Dim Shell, rtrnCode, ctlCmd
   Dim intervalHandle
+
+  If not AssertBash() Then
+    Exit Sub
+  End If
 
   ctlCmd = """" + gitBashExecutable + """ --login -c '" + scriptCmd + "'"
 
@@ -203,10 +225,6 @@ Sub SaveConfig(logoDir, gitbashExe)
   Set fileHandle = Nothing
   Set fso = Nothing
 End Sub
-
-Function IsUnset(checkVal)
-  IsUnset = IsEmpty(checkVal) or IsNull(checkVal) or checkVal = "" 
-End Function
 
 Function GetConfigValue(configVarName, submittedValue)
   Dim currentValue
@@ -283,7 +301,7 @@ Sub SaveLogos
   logoDir = inputForm.logoDir.value
 
   If faceitId = "" Then
-    MsgBox "Must Provide a FaceIt ID.", vbCritical, "Error"
+    AlertError "Must Provide a FaceIt ID."
     Exit Sub
   End If
 
@@ -295,7 +313,7 @@ Sub SaveLogos
       faceitType = "tournament"
 
     case else
-      MsgBox "Could not determine FaceIT Id Type.", vbCritital, "Error"
+      AlertError "Could not determine FaceIT Id Type."
       Exit Sub
   End Select
 
@@ -321,7 +339,7 @@ Sub GetStats
   faceitId = inputForm.faceitId.value
 
   If faceitId = "" Then
-    MsgBox "Must Provide a FaceIt ID.", vbCritical, "Error"
+    AlertError "Must Provide a FaceIt ID."
     Exit Sub
   End If
 
