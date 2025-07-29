@@ -96,6 +96,11 @@ function error-out() {
   exit -1
 }
 
+# ------------  Utility
+function hconva() {
+  printf "${!1}"|xxd -r -p
+}
+
 # ------------  Property Handling
 
 function data-get() {
@@ -127,3 +132,40 @@ function get-log-file() {
 function get-is-web-output() {
   echo "${IS_WEB_OUTPUT}"
 }
+
+# ------------ FaceIT
+function fiaha() {
+  for fihv in ${@}; do
+    printf " -%s '%s'" 'H' "$(hconva "${fihv}")"
+  done
+}
+
+function build-api-endpoint-url() {
+  local API_ENDPOINT="${1}"
+  local API_DOMAIN="${2}"
+  local API_V="${3}"
+
+  [ -z "${API_DOMAIN}" ] && API_DOMAIN='data'
+  [ -z "${API_V}" ] && API_V='4'
+
+  printf 'https://open.faceit.com/%s/v%d/%s\n' "${API_DOMAIN}" "${API_V}" "${API_ENDPOINT}"
+}
+
+function call-faceit-api() {
+  local API_ENDPOINT="${1}"
+  local API_DOMAIN="${2}"
+  local API_V="${3}"
+  local API_VERB="${4}"
+
+  [ -z "${API_VERB}" ] && API_VERB="GET"
+
+  local CURL_CMD=(curl)
+  CURL_CMD+=(-s)
+  CURL_CMD+=(-X "${API_VERB}")
+  CURL_CMD+=("$(fiaha RPCEFAK RPCEAAJ)")
+  CURL_CMD+=(\'"$(build-api-endpoint-url "${API_ENDPOINT}" "${API_DOMAIN}" "${API_V}")"\')
+
+  eval ${CURL_CMD[@]}
+}
+
+
