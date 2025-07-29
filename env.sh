@@ -57,6 +57,11 @@ function ui-log-wrap() {
 function ui-data-wrap() {
   local DATA_TXT="${1}"
 
+  if [ -z "$(get-is-web-output)" ]; then
+    echo -e "${DATA_TXT}"
+    return
+  fi
+
   echo -e "${DATA_TXT}"|sed 's/$/<br\/>/'|insert-data-syntax-highlighting
 }
 
