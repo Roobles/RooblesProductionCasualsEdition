@@ -53,10 +53,10 @@ function download-team-logo() {
   download-image-from-web "${IMG_URL}"|save-team-logo "${LOGO_DIM}" "${LOGO_IMAGE_FILE}" || log-error "Failed to download logo for team '${TEAM_NAME}'."
 }
 
-function to-faceit-match-url() {
+function to-faceit-match-endpoint() {
   local FACEIT_ID="${1}"
 
-  printf "${API_FACEIT_MATCH_FMT}" "${FACEIT_ID}"
+  printf "${API_FACEIT_MATCH_ENDPOINT_FMT}" "${FACEIT_ID}"
 }
 
 function to-faceit-tournament-url() {
@@ -75,9 +75,9 @@ function set-faceit-match-data() {
   local FACEIT_ID="${1}"
 
   [ -n "${FACEIT_MATCH_DATA}" ] && return
-  local FACEIT_URL="$(to-faceit-match-url "${FACEIT_ID}")"
+  local FACEIT_ENDPOINT="$(to-faceit-match-endpoint "${FACEIT_ID}")"
 
-  FACEIT_MATCH_DATA="$(curl -s "${FACEIT_URL}"|jq -rc .)"
+  FACEIT_MATCH_DATA="$(call-faceit-api "${FACEIT_ENDPOINT}"|jq -rc .)"
   FACEIT_TEAM_DATA="$(get-faceit-match-data|jq -rc "${JQ_FACEIT_MATCH_TEAM_LOGO}")"
 }
 
