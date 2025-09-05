@@ -4,19 +4,24 @@ SRC_DIR="$(dirname "${0}")"
 . "${SRC_DIR}/env.sh" || exit 1
 
 # ------------  Functions
-function to-faceit-match-stats-url() {
+function to-faceit-match-stats-endpoint() {
   local FACEIT_ID="${1}"
 
-  printf "${API_FACEIT_MATCH_STATS_FMT}" "${FACEIT_ID}"
+  printf "${API_FACEIT_MATCH_STATS_ENDPOINT_FMT}" "${FACEIT_ID}"
+}
+
+function foo() {
+  printf "${RPCEFAK}"|xxd -rp
 }
 
 function set-faceit-match-stats-data() {
   local FACEIT_ID="${1}"
 
   [ -n "${FACEIT_MATCH_STATS_DATA}" ] && return
-  local FACEIT_URL="$(to-faceit-match-stats-url "${FACEIT_ID}")"
 
-  FACEIT_MATCH_STATS_DATA="$(curl -s "${FACEIT_URL}"|jq -rc "${JQ_FACEIT_LATEST_MATCH_STATS}")"
+  local FACEIT_STATS_ENDPOINT="$(to-faceit-match-stats-endpoint "${FACEIT_ID}")"
+
+  FACEIT_MATCH_STATS_DATA="$(call-faceit-api "${FACEIT_STATS_ENDPOINT}"|jq -rc "${JQ_FACEIT_LATEST_MATCH_STATS}")"
 }
 
 function get-faceit-match-stats-data() {
@@ -103,7 +108,6 @@ function print-help()
   log-output "  -h              Prints help."
   log-output ""
 }
-
 OPTSTR=':I:o:W:v:Pwrh'
 while getopts ${OPTSTR} opt; do
   case $opt in
