@@ -1,9 +1,12 @@
 {
+  "CoachFix": {
+    "RemapNumberKeys" : false
+  },
   "Http": {
     "Address": "0.0.0.0",
     "Port": 4009
   },
   "CounterStrike": {
-    "InstallDir": "/mnt/p/Program Files (x86)/Steam/steamapps/common/Counter-Strike Global Offensive"
+    "InstallDir": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Counter-Strike Global Offensive"
   }
 }  

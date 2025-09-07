@@ -4,6 +4,7 @@ const { HttpManager, HttpBinding, HttpVerb } = require('./http-manager.js');
 const { FileManager } = require('./file-manager.js');
 const { GamestateParser } = require('./gamestate-parser.js');
 const { GamestateManager } = require('./gamestate-manager.js');
+const { CsManager } = require('./cs-manager.js');
 const { ObservationManager } = require('./observation-manager.js');
 const { RooblesProductionManager } = require('./roobles-production-manager.js');
 
@@ -39,8 +40,12 @@ class RooblesProductionFactory {
     return new GamestateManager(fact.Logger(), fact.GamestateParser());
   }
 
+  buildCsManager(fact) {
+    return new CsManager(fact.Configuration(), fact.Logger(), fact.FileManager());
+  }
+
   buildObservationManager(fact) {
-    return new ObservationManager(fact.Configuration(), fact.Logger());
+    return new ObservationManager(fact.Configuration(), fact.Logger(), fact.CsManager());
   }
 
   buildRooblesProductionManager(fact) {
@@ -92,6 +97,10 @@ class RooblesProductionFactory {
 
   GamestateManager() {
     return this.lazyLoad(this, 'gamestateManager', this.buildGamestateManager);
+  }
+
+  CsManager() {
+    return this.lazyLoad(this, 'csManager', this.buildCsManager);
   }
 
   ObservationManager() {

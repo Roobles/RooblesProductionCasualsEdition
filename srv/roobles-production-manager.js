@@ -36,8 +36,9 @@ class RooblesProductionManager {
     this.httpManager.init(bindings);
   }
 
-  initGamestateManager() {
+  initManagers() {
     this.gamestateManager.init();
+    this.observerManager.init();
   }
 
   initEventHandlers() {
@@ -45,7 +46,7 @@ class RooblesProductionManager {
   }
 
   init() {
-    this.initGamestateManager();
+    this.initManagers();
     this.initHttpServer();
     this.initEventHandlers();
   }
