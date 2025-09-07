@@ -1,8 +1,10 @@
 const { Logger, LogLevels } = require('./logger.js');
 const { ConfigurationManager } = require('./configuration-manager.js');
 const { HttpManager, HttpBinding, HttpVerb } = require('./http-manager.js');
+const { FileManager } = require('./file-manager.js');
 const { GamestateParser } = require('./gamestate-parser.js');
 const { GamestateManager } = require('./gamestate-manager.js');
+const { ObservationManager } = require('./observation-manager.js');
 const { RooblesProductionManager } = require('./roobles-production-manager.js');
 
 class RooblesProductionFactory {
@@ -25,6 +27,10 @@ class RooblesProductionFactory {
     return new HttpManager(fact.Configuration(), fact.Logger());
   }
 
+  buildFileManager(fact) {
+    return new FileManager(fact.Configuration(), fact.Logger());
+  }
+
   buildGamestateParser(fact) {
     return new GamestateParser(fact.Logger());
   }
@@ -33,8 +39,12 @@ class RooblesProductionFactory {
     return new GamestateManager(fact.Logger(), fact.GamestateParser());
   }
 
+  buildObservationManager(fact) {
+    return new ObservationManager(fact.Configuration(), fact.Logger());
+  }
+
   buildRooblesProductionManager(fact) {
-    return new RooblesProductionManager(fact.Configuration(), fact.ConfigManager(), fact.Logger(), fact.HttpManager(), fact.GamestateManager());
+    return new RooblesProductionManager(fact.Configuration(), fact.ConfigManager(), fact.Logger(), fact.HttpManager(), fact.GamestateManager(), fact.ObservationManager());
   }
 
   lazyLoad(fact, propName, buildResource) {
@@ -72,12 +82,20 @@ class RooblesProductionFactory {
     return this.lazyLoad(this, 'httpManager', this.buildHttpManager);
   }
 
+  FileManager() {
+    return this.lazyLoad(this, 'fileManager', this.buildFileManager);
+  }
+
   GamestateParser() {
     return this.lazyLoad(this, 'gamestateParser', this.buildGamestateParser);
   }
 
   GamestateManager() {
     return this.lazyLoad(this, 'gamestateManager', this.buildGamestateManager);
+  }
+
+  ObservationManager() {
+    return this.lazyLoad(this, 'observationManager', this.buildObservationManager);
   }
 
   RooblesProductionManager() {

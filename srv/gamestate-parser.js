@@ -1,11 +1,5 @@
-const GsiEventType = {
+const GsiEventTypes = {
   ObservationSlotChange: 0
-};
-
-const GsiEventChangeType = {
-  Added: 0,
-  Removed: 1,
-  Changed: 2
 };
 
 const GsiChangeSource = {
@@ -34,7 +28,14 @@ class GamestateParser {
     gsEvents.push(...(this.parseChanged(gsEvt, added, GsiChangeSource.Added)));
     gsEvents.push(...(this.parseChanged(gsEvt, previously, GsiChangeSource.Updated)));
 
-    return gsEvents;
+    return gsEvents.reduce((acc, evt) => {
+      const evType = evt.Type;
+      if(!(evType in acc)) 
+        acc[evType] = [];
+
+      acc[evType].push(evt.Data);
+      return acc;
+    }, {});
   }
 
   buildEvent(eventType, eventSource, eventData) {
@@ -46,6 +47,22 @@ class GamestateParser {
   }
 
   getAllPlayerData(gsEvt) {
+    const playerData = [];
+    if(gsEvt == undefined)
+      return playerData;
+
+    const allPlayers = gsEvt[GsiKeys.AllPlayers];
+    if(allPlayers == undefined)
+      return playerData;
+
+    const playerIds = Object.keys(allPlayers);
+    for(const playerId of playerIds) {
+      const currentPlayerData = this.toPlayerData(playerId, allPlayers[playerId]);
+      if(currentPlayerData != undefined)
+        playerData.push(currentPlayerData);
+    }
+
+    return playerData;
   }
 
   getPlayerData(gsEvt, playerId) {
@@ -125,7 +142,7 @@ class GamestateParser {
     if(playerData == undefined)
       return playerChanges;
 
-    const change = this.buildEvent(GsiEventType.ObservationSlotChange, changeType, playerData);
+    const change = this.buildEvent(GsiEventTypes.ObservationSlotChange, changeType, playerData);
     playerChanges.push(change);
 
     return playerChanges;
@@ -133,5 +150,6 @@ class GamestateParser {
 }
 
 module.exports = {
+  GsiEventTypes: GsiEventTypes,
   GamestateParser: GamestateParser
 }

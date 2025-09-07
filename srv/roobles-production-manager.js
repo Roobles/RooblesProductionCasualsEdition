@@ -1,12 +1,13 @@
 const { HttpBinding, HttpVerb } = require('./http-manager.js');
 
 class RooblesProductionManager {
-  constructor(config, configManager, logger, httpManager, gamestateManager) {
+  constructor(config, configManager, logger, httpManager, gamestateManager, observerManager) {
     this.config = config;
     this.logger = logger;
     this.configManager = configManager;
     this.httpManager = httpManager;
     this.gamestateManager = gamestateManager;
+    this.observerManager = observerManager;
   }
 
   processGamestateEvent(gsEvt) {
@@ -39,9 +40,14 @@ class RooblesProductionManager {
     this.gamestateManager.init();
   }
 
+  initEventHandlers() {
+    this.gamestateManager.subscribeToObserveSlotChange(dta => this.observerManager.processObservationSlotChanges(dta));
+  }
+
   init() {
     this.initGamestateManager();
     this.initHttpServer();
+    this.initEventHandlers();
   }
 
   run() {
