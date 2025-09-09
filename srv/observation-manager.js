@@ -1,4 +1,4 @@
-const CoachRegex = /^ *Coach/i;
+const CoachRegex = /^ *Coach *\|/i;
 const ConfigFileExtensionRegex = /\.cfg *$/i;
 const FixRangeLowerBound = 10;
 const FixRangeUpperBound = 11;

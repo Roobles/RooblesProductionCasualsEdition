@@ -23,9 +23,21 @@ class RooblesProductionManager {
     return this.httpManager.getBindings();
   }
 
+  handleServiceAction(serviceAction) {
+    const sts = serviceAction.Status;
+    switch(sts) {
+      case 'Stop':
+        this.shutdown();
+
+      default:
+        this.logger.warn(`Unknown Service Action Status: ${sts}`);
+    }
+  }
+
   buildHttpBindings() {
     return [
       new HttpBinding('/valve/gsi', HttpVerb.POST, (gsEvt) => this.processGamestateEvent(gsEvt)),
+      new HttpBinding('/roobles/production/service', HttpVerb.PUT, (srvAct) => this.handleServiceAction(srvAct)),
       new HttpBinding('/roobles/api', HttpVerb.GET, () => this.getHttpBindings()),
       new HttpBinding('/roobles/config', HttpVerb.GET, () => this.getConfiguration())
     ];
@@ -46,6 +58,7 @@ class RooblesProductionManager {
   }
 
   init() {
+    // TODO: Consider any loading of persisted data.
     this.initManagers();
     this.initHttpServer();
     this.initEventHandlers();
@@ -53,6 +66,11 @@ class RooblesProductionManager {
 
   run() {
     this.httpManager.run();
+  }
+
+  shutdown() {
+    // TODO: Consider any persistence of data.
+    this.httpManager.stop();
   }
 }
 

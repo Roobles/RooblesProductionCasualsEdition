@@ -2,6 +2,11 @@ ROOBLES_PROD_CASUAL_SRC_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
 . "${ROOBLES_PROD_CASUAL_SRC_DIR}/api-parse.sh" || exit 1
 
+# ------------  Service Variables
+ROOBLES_PROD_SERVICE_DIR="${ROOBLES_PROD_CASUAL_SRC_DIR}/srv"
+ROOBLES_PROD_SERVICE_SCRIPT="${ROOBLES_PROD_SERVICE_DIR}/roobles-production.js"
+ROOBLES_PROD_SERVICE_CONFIG="${ROOBLES_PROD_SERVICE_DIR}/roobles-production-config.json"
+
 # ------------  Log Variables
 SHOULD_LOG_OUTPUT=''
 
@@ -168,4 +173,72 @@ function call-faceit-api() {
   eval ${CURL_CMD[@]}
 }
 
+# ------------ Service
+function get-service-config() {
+  [ -z "${ROOBLES_PROD_SERVICE_CONFIG_DATA}" ] && ROOBLES_PROD_SERVICE_CONFIG_DATA="$(fetch-service-config)"
+  echo "${ROOBLES_PROD_SERVICE_CONFIG_DATA}"
+}
 
+function fetch-service-config() {
+  jq -rc . "${ROOBLES_PROD_SERVICE_CONFIG}"
+}
+
+function query-service-config() {
+  local CONFIG_QUERY="${1}"
+
+  get-service-config|jq -rc "${CONFIG_QUERY}"
+}
+
+function get-service-port() {
+  query-service-config '.Http.Port'
+}
+
+function get-service-address() {
+  query-service-config '.Http.Address'|sed 's/0\.0\.0\.0/localhost/'
+}
+
+function build-service-api-url() {
+  local API_ENDPOINT="${1}"
+
+  local API_HOST="$(get-service-address)"
+  local API_PORT="$(get-service-port)"
+
+  printf 'http://%s:%d/%s\n' "${API_HOST}" "${API_PORT}" "${API_ENDPOINT}"
+}
+
+function send-service-request() {
+  local HTTP_VERB="${1}"
+  local API_ENDPOINT="${2}"
+  local PAYLOAD="${3}"
+
+  local HTTP_CMD=(curl)
+  HTTP_CMD+=(-s)
+  HTTP_CMD+=(-X "${HTTP_VERB}")
+  if [ -n "${PAYLOAD}" ]; then
+    HTTP_CMD+=(-H "'Content-Type: application/json'")
+    HTTP_CMD+=(-d "'$(echo "${PAYLOAD}"|jq -rc .)'")
+  fi
+
+  HTTP_CMD+=("'$(build-service-api-url "${API_ENDPOINT}")'")
+  eval ${HTTP_CMD[@]}
+}
+
+function stop-service() {
+  send-service-request PUT 'roobles/production/service' '{"Status":"Stop"}'
+}
+
+function launch-service() {
+  #TODO: add flags and checks for mintty
+  local SRV_CMD=()
+  SRV_CMD+=(mintty)
+  SRV_CMD+=(-t "'Roobles Production (Casuals Edition) Service'")
+  SRV_CMD+=(-h never)
+  SRV_CMD+=(-s 160x50)
+  SRV_CMD+=(-o Scrollbar=no)
+  SRV_CMD+=(-e $(which bash).exe)
+  SRV_CMD+=(-c "'node \"$(readlink -f "${ROOBLES_PROD_SERVICE_SCRIPT}")\"'")
+
+  pushd "${ROOBLES_PROD_SERVICE_DIR}" > /dev/null
+  eval ${SRV_CMD[@]}
+  popd > /dev/null
+}

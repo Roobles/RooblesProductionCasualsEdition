@@ -23,6 +23,7 @@ class HttpManager {
     this.server = express();
     this.server.use(express.json());
     this.bindings = [];
+    this.openService = null;
 
   }
 
@@ -58,7 +59,13 @@ class HttpManager {
     const host = httpConfig.Address;
     const port = httpConfig.Port;
 
-    this.server.listen(port, host);
+    this.logger.logAction(`HTTP Service Listening on Port: ${port}`);
+    this.openService = this.server.listen(port, host);
+  }
+
+  stop() {
+    this.logger.logAction(`Stopping HTTP Service.`);
+    this.openService.close();
   }
 
   getBindings() {
