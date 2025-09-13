@@ -11,8 +11,7 @@ const { RooblesProductionManager } = require('./roobles-production-manager.js');
 class RooblesProductionFactory {
 
   buildLogger(fact) {
-    const logLevel = LogLevels.INFO;
-    return new Logger(logLevel);
+    return new Logger(fact.Configuration());
   }
 
   buildConfigurationManager(fact) {

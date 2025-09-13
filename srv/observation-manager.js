@@ -18,6 +18,24 @@ const ObserverSlotKeyBinds = [
   "="
 ];
 
+class ObservationSet {
+  constructor() {
+    this.playerSet = new Array(FixRangeUpperBound + 1);
+  }
+
+  setUpdatedPlayer(observationSlot, playerName) {
+    if(this.playerSet[observationSlot] == playerName)
+      return false;
+
+    this.playerSet[observationSlot] = playerName;
+    return true;
+  }
+
+  getObservablePlayers() {
+    return this.playerSet.filter(pl => pl != undefined);
+  }
+}
+
 class ObservationManager {
   shouldRemapKeys() {
     return this.config.CoachFix.RemapNumberKeys;
@@ -27,6 +45,8 @@ class ObservationManager {
     this.config = config;
     this.logger = logger;
     this.csManager = csManager;
+    this.observationSet = new ObservationSet();
+    this.latestChangeArgs = undefined;
   }
 
   init() {
@@ -36,10 +56,10 @@ class ObservationManager {
 
   // ---------------------------------------------------------------  Domain Methods
   processObservationSlotChanges(changeArgs) {
-    // TODO: Add a configuration check for multiple different kinds of behaviors.
     if(changeArgs == undefined)
       return;
-
+    
+    this.logger.traceObject(this.latestChangeArgs = changeArgs);
     const changedData = changeArgs.ChangedData;
     if(changedData == undefined || changedData.length < 1)
       return;
@@ -52,17 +72,28 @@ class ObservationManager {
   }
 
   setPrimaryConfiguration() {
-    // TODO: Consider making this configurable.
     const configFileName = "roobles_production_spec_binds.cfg";
     const cfgContents = this.buildPrimaryConfiguration();
 
     this.csManager.writeConfigFile(configFileName, cfgContents);
   }
 
+  getMappedPlayers() {
+    const playerSet = this.observationSet.getObservablePlayers();
+    const setLen = playerSet.length;
+    for(let i=0; i<setLen; i++) {
+      const playerName = playerSet[i];
+    }
+
+    return playerSet;
+  }
+
+  getLatestObservationEvent() {
+    return this.latestChangeArgs;
+  }
+
   // ---------------------------------------------------------------  Primary Configuration
   buildPrimaryConfiguration() {
-    // TODO: Build this based on configurable behaviors.
-    
     return this.shouldRemapKeys()
       ? this.buildKeyRemapPrimaryConfiguration()
       : this.buildOverflowPrimaryConfiguration();
@@ -128,12 +159,15 @@ class ObservationManager {
       : playerCount;
 
     this.logger.logAction("Remapping All Player Binds");
-    for(let i=0; i<limit; i++)
-      this.setPlayerObservationExecutionScript(sortedPlayers[i], i);
+    for(let i=0; i<limit; i++) {
+      const player = sortedPlayers[i];
+      if(this.isUpdatedObservationSlot(i, player.Name))
+        this.setPlayerObservationExecutionScript(player, i);
+    }
   }
 
   setOverflowPlayerBindExecs(changeArgs) {
-    const playerFixes = changeArgs.ChangedData.filter(p => !this.isACoachSlot(p) && this.isOutOfBounds(p));
+    const playerFixes = changeArgs.CurrentData.filter(p => !this.isACoachSlot(p) && this.isOutOfBounds(p) && this.isUpdatedPlayer(p));
     if(playerFixes.length < 1)
       return;
 
@@ -146,7 +180,7 @@ class ObservationManager {
     const command = this.toSpecPlayerCommand(playerData);
     const fileName = this.buildExecFileNameByObserverSlot(observationSlot);
 
-
+    this.logger.debug(`Setting player '${playerData.Name}' to key '${this.getBindingKeyByObserverSlot(observationSlot)}'.`);
     this.csManager.writeConfigFile(fileName, command);
   }
 
@@ -174,6 +208,14 @@ class ObservationManager {
 
   isACoach(playerName) {
     return CoachRegex.test(playerName);
+  }
+
+  isUpdatedPlayer(playerData) {
+    return this.isUpdatedObservationSlot(playerData.ObserverSlot, playerData.Name);
+  }
+
+  isUpdatedObservationSlot(observationSlot, playerName) {
+    return this.observationSet.setUpdatedPlayer(observationSlot, playerName);
   }
 
   isOutOfBounds(playerData) {

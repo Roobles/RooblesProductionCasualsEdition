@@ -22,6 +22,7 @@ class GamestateParser {
     if(gsEvt == undefined)
       return gsEvents;
     
+    this.logger.traceObject(gsEvt);
     const added = gsEvt.added;
     const previously = gsEvt.previously;
 
@@ -112,21 +113,21 @@ class GamestateParser {
     return changes;
   }
 
-  parsePlayerChanges(gsEvt, allPlayers, changeType) {
+  parsePlayerChanges(gsEvt, allChangedPlayers, changeType) {
     const playerChanges = [];
 
-    const playerIds = Object.keys(allPlayers);
-    for(const playerId of playerIds) {
-      playerChanges.push(...(this.parseSinglePlayerChanges(gsEvt, playerId, allPlayers, changeType)));
+    const changedPlayerIds = Object.keys(allChangedPlayers);
+    for(const changedPlayerId of changedPlayerIds) {
+      playerChanges.push(...(this.parseSinglePlayerChanges(gsEvt, changedPlayerId, allChangedPlayers, changeType)));
     }
 
     return playerChanges;
   }
 
-  parseSinglePlayerChanges(gsEvt, playerId, allPlayers, changeType) {
+  parseSinglePlayerChanges(gsEvt, changedPlayerId, allChangedPlayers, changeType) {
 
     const playerChanges = [];
-    const changedPlayer = allPlayers[playerId];
+    const changedPlayer = allChangedPlayers[changedPlayerId];
 
     // Make sure player isn't just set to true.
     if((typeof changedPlayer) != "object")
@@ -138,13 +139,17 @@ class GamestateParser {
 
 
     // An observation slot change has happened.
-    const playerData = this.getPlayerData(gsEvt, playerId);
-    if(playerData == undefined)
+    // Get the current observation slot from current, full GIS data.
+    // We don't care about the previous value, only current.
+    const currentPlayerData = this.getPlayerData(gsEvt, changedPlayerId);
+    if(currentPlayerData == undefined)
       return playerChanges;
 
-    const change = this.buildEvent(GsiEventTypes.ObservationSlotChange, changeType, playerData);
+    // Build an event, with current player data, that indicates an observation slot change has occurred.
+    const change = this.buildEvent(GsiEventTypes.ObservationSlotChange, changeType, currentPlayerData);
     playerChanges.push(change);
 
+    // In the future, other player changes might be relevant.  (Like disconnect, joining, etc.)
     return playerChanges;
   }
 }

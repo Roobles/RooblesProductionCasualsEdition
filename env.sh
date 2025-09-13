@@ -223,6 +223,13 @@ function send-service-request() {
   eval ${HTTP_CMD[@]}
 }
 
+function send-service-get() {
+  local API_ENDPOINT="${1}"
+  local PAYLOAD="${2}"
+
+  send-service-request 'GET' "${API_ENDPOINT}" "${PAYLOAD}"
+}
+
 function stop-service() {
   send-service-request PUT 'roobles/production/service' '{"Status":"Stop"}'
 }

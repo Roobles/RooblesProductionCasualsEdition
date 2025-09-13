@@ -7,8 +7,8 @@ const LogLevels = {
 };
 
 class Logger {
-  constructor(logLevel = LogLevels.INFO) {
-    this.logLevel = logLevel;
+  constructor(config) {
+    this.config = config;
   }
 
   getLogLevelName(logLevel) {
@@ -34,13 +34,15 @@ class Logger {
     }
   }
 
-  setLevel(logLevel) {
-    this.logLevel = logLevel;
-  }
-
   errorDrop(errObj, message) {
     this.error(message);
     this.logObject(errObj);
+  }
+
+  buildObjectMessage(obj) {
+    return (typeof obj === 'object')
+      ? JSON.stringify(obj, null, '  ')
+      : obj;
   }
 
   logObject(obj, logLevel = undefined) {
@@ -48,11 +50,8 @@ class Logger {
     if(logLevel === undefined)
       logLevel = LogLevels.INFO;
 
-    const objVal = (typeof obj === 'object')
-      ? JSON.stringify(obj, null, '  ')
-      : obj;
-
-    this.logMessage(objVal, logLevel, );
+    const objVal = this.buildObjectMessage(obj);
+    this.logMessage(objVal, logLevel, false);
   }
 
   log(message, includeLabel = false) {
@@ -60,7 +59,7 @@ class Logger {
   }
 
   logAction(message) {
-    return this.log(`---- ${message}`, false);
+    return this.log(`\n---- ${message}`, false);
   }
 
   error(message) {
@@ -79,9 +78,17 @@ class Logger {
     return this.logMessage(message, LogLevels.TRACE, true);
   }
 
+  traceObject(obj) {
+    return this.trace(this.buildObjectMessage(obj));
+  }
+
+  getLogLevel() {
+    return this.config.Logging.LogLevel;
+  }
+
   logMessage(message, logLevel = undefined, includeLabel = false) {
 
-    const logLevelSetting = this.logLevel;
+    const logLevelSetting = this.getLogLevel();
 
     if(logLevel === undefined)
       logLevel = LogLevels.LOG;
@@ -98,6 +105,7 @@ class Logger {
 
     // TODO: Remove this.
     // Don't record error at the moment.
+    // Keep all writes to stdout, not stderr, even during error events.
     const writeLog = console.log;
     /*
     const writeLog = isError
