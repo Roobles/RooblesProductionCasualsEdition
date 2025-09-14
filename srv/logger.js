@@ -62,6 +62,10 @@ class Logger {
     return this.log(`\n---- ${message}`, false);
   }
 
+  info(message) {
+    return this.log(message, true);
+  }
+
   error(message) {
     return this.logMessage(message, LogLevels.ERROR, true);
   }

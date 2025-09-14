@@ -42,12 +42,17 @@ class RooblesProductionManager {
     return this.observerManager.getLatestObservationEvent();
   }
 
+  getCurrentGamestate() {
+    return this.gamestateManager.getGamestateData(true);
+  }
+
   buildHttpBindings() {
     return [
       new HttpBinding('/valve/gsi', HttpVerb.POST, (gsEvt) => this.processGamestateEvent(gsEvt)),
       new HttpBinding('/roobles/production/service', HttpVerb.PUT, (srvAct) => this.handleServiceAction(srvAct)),
       new HttpBinding('/roobles/api', HttpVerb.GET, () => this.getHttpBindings()),
       new HttpBinding('/roobles/config', HttpVerb.GET, () => this.getConfiguration()),
+      new HttpBinding('/roobles/gamestate', HttpVerb.GET, () => this.getCurrentGamestate()),
       new HttpBinding('/roobles/observation/players', HttpVerb.GET, () => this.getObservablePlayers()),
       new HttpBinding('/roobles/observation/events/latest', HttpVerb.GET, () => this.getLatestObservationEvent())
     ];

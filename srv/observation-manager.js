@@ -180,7 +180,7 @@ class ObservationManager {
     const command = this.toSpecPlayerCommand(playerData);
     const fileName = this.buildExecFileNameByObserverSlot(observationSlot);
 
-    this.logger.debug(`Setting player '${playerData.Name}' to key '${this.getBindingKeyByObserverSlot(observationSlot)}'.`);
+    this.logger.info(`Setting player '${playerData.Name}' to key '${this.getBindingKeyByObserverSlot(observationSlot)}'.`);
     this.csManager.writeConfigFile(fileName, command);
   }
 

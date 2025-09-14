@@ -1,5 +1,7 @@
 const GsiEventTypes = {
-  ObservationSlotChange: 0
+  ConnectionChange: 0,
+  ObservationSlotChange: 1,
+  PlayersAdded: 2
 };
 
 const GsiChangeSource = {
@@ -7,14 +9,51 @@ const GsiChangeSource = {
   Updated: 1
 };
 
+const RoundPhases = {
+  Unknown: undefined,
+  Live: "live",
+  FreezeTime: "freezetime",
+  Over: "over"
+}
+
 const GsiKeys = {
   AllPlayers: "allplayers"
+}
+
+const ConnectionStates = {
+  Unknown: 0,
+  ConnectedToClient: 1,
+  ConnectedToMatch: 2
+}
+
+const DataSegments = {
+  Added: "added",
+  Previously: "previously",
+  Provider: "provider"
 }
 
 class GamestateParser {
 
   constructor(logger) {
     this.logger = logger;
+  }
+
+  getConnectionState(gsEvt) {
+    if(gsEvt == undefined)
+      return ConnectionStates.Unknown;
+
+    const disconnectedCompatibleSegments = [
+      DataSegments.Provider,
+      DataSegments.Previously
+    ];
+
+    const gameDataSegments = Object
+      .keys(gsEvt)
+      .filter(k => !disconnectedCompatibleSegments.includes(k));
+
+    return gameDataSegments.length > 0
+      ? ConnectionStates.ConnectedToMatch
+      : ConnectionStates.ConnectedToClient;
   }
 
   parse(gsEvt) {
@@ -156,5 +195,6 @@ class GamestateParser {
 
 module.exports = {
   GsiEventTypes: GsiEventTypes,
-  GamestateParser: GamestateParser
+  GamestateParser: GamestateParser,
+  ConnectionStates: ConnectionStates
 }
