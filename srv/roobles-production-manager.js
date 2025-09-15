@@ -1,10 +1,11 @@
 const { HttpBinding, HttpVerb } = require('./http-manager.js');
 
 class RooblesProductionManager {
-  constructor(config, configManager, logger, httpManager, gamestateManager, observerManager) {
+  constructor(config, configManager, logger, rooblesHeartbeat, httpManager, gamestateManager, observerManager) {
     this.config = config;
     this.logger = logger;
     this.configManager = configManager;
+    this.rooblesHeartbeat = rooblesHeartbeat;
     this.httpManager = httpManager;
     this.gamestateManager = gamestateManager;
     this.observerManager = observerManager;
@@ -68,6 +69,10 @@ class RooblesProductionManager {
     this.observerManager.init();
   }
 
+  initHeartbeats() {
+    this.rooblesHeartbeat.subscribe('test', () => this.gamestateManager.checkIfConnected(), 2);
+  }
+
   initEventHandlers() {
     this.gamestateManager.subscribeToObserveSlotChange(dta => this.observerManager.processObservationSlotChanges(dta));
   }
@@ -77,15 +82,18 @@ class RooblesProductionManager {
     this.initManagers();
     this.initHttpServer();
     this.initEventHandlers();
+    this.initHeartbeats();
   }
 
   run() {
     this.httpManager.run();
+    this.rooblesHeartbeat.run();
   }
 
   shutdown() {
     // TODO: Consider any persistence of data.
     this.httpManager.stop();
+    this.rooblesHeartbeat.stop();
   }
 }
 

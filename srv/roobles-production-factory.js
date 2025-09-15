@@ -1,6 +1,7 @@
 const { Logger, LogLevels } = require('./logger.js');
 const { ConfigurationManager } = require('./configuration-manager.js');
 const { HttpManager, HttpBinding, HttpVerb } = require('./http-manager.js');
+const { RooblesHeartbeat } = require('./heart-of-the-rat.js');
 const { FileManager } = require('./file-manager.js');
 const { GamestateParser } = require('./gamestate-parser.js');
 const { GamestateManager } = require('./gamestate-manager.js');
@@ -22,6 +23,10 @@ class RooblesProductionFactory {
   getConfiguration(fact) {
     const configMan = fact.ConfigManager();
     return configMan.getConfiguration();
+  }
+
+  buildRooblesHeartbeat(fact) {
+    return new RooblesHeartbeat(fact.Configuration(), fact.Logger());
   }
 
   buildGamestateDataset(fact) {
@@ -53,7 +58,7 @@ class RooblesProductionFactory {
   }
 
   buildRooblesProductionManager(fact) {
-    return new RooblesProductionManager(fact.Configuration(), fact.ConfigManager(), fact.Logger(), fact.HttpManager(), fact.GamestateManager(), fact.ObservationManager());
+    return new RooblesProductionManager(fact.Configuration(), fact.ConfigManager(), fact.Logger(), fact.RooblesHeartbeat(), fact.HttpManager(), fact.GamestateManager(), fact.ObservationManager());
   }
 
   lazyLoad(fact, propName, buildResource) {
@@ -85,6 +90,10 @@ class RooblesProductionFactory {
 
   Configuration() {
     return this.lazyLoad(this, 'configuration', this.getConfiguration);
+  }
+
+  RooblesHeartbeat() {
+    return this.lazyLoad(this, 'rooblesHeartbeat', this.buildRooblesHeartbeat);
   }
 
   GamestateDataset() {

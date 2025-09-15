@@ -11,19 +11,46 @@ class GamestateManager {
     this.logger = logger;
     this.gsParser = gamestateParser;
     this.gamestateDataset = gamestateDataset;
+    this.lastEventMessage = Date.now();
+    this.secondsUntilConsideredDisconnected = 8;
 
     this.onObserveSlotChange = new EventEmitter();
     this.onDisconnectedFromMatch = new EventEmitter();
     this.onConnectedToClient = new EventEmitter();
     this.onConnectedToMatch = new EventEmitter();
+    this.onDisconnectedFromClient = new EventEmitter();
   }
 
   init() {
     this.subscribeToClientConnection(evtData => this.processClientConnect(evtData));
     this.subscribeToMatchConnection(evtData => this.processMatchConnect(evtData));
     this.subscribeToMatchDisconnect(evtData => this.processMatchDisconnect(evtData));
+    this.subscribeToClientDisconnect(evtData => this.processClientDisconnect(evtData));
 
     this.subscribeToObserveSlotChange(evtData => this.processObservationSlotChange(evtData));
+  }
+  
+  // ------------------------------- Healthcheck Methods
+  checkIfConnected() {
+
+    const lastMessage = this.lastEventMessage;
+    const currentTime = Date.now();
+
+    const timeElapsed = currentTime - lastMessage;
+    const timeAllotted = this.secondsUntilConsideredDisconnected * 1000;
+
+    if(timeElapsed <= timeAllotted)
+      return;
+
+    // Check if already disconnected.  If so, there's no need to update.
+    const currentStatus = this.getCurrentConnectionStatus();
+    if(currentStatus == ConnectionStatuses.Disconnected)
+      return;
+
+    // Surpassed configured time.
+    const disconnectData = {};
+    this.setCurrentConnectionStatus(ConnectionStatuses.Disconnected);
+    this.triggerConnectionStatusEvent(disconnectData, this.onDisconnectedFromClient);
   }
 
   // ------------------------------- Dataset Methods
@@ -72,7 +99,6 @@ class GamestateManager {
 
   processMatchConnect(onConnectData) {
     this.logger.logAction("Connected to Match");
-    this.logger.logObject(onConnectData.GsiEvent);
     this.setCurrentMatchData(onConnectData.GsiEvent);
   }
 
@@ -85,9 +111,14 @@ class GamestateManager {
     this.setPlayerData(observationChanges.CurrentData);
   }
 
+  processClientDisconnect(onDisconnectData) {
+    this.logger.logAction("Disconnected from CS2");
+  }
+
   // ------------------------------- Gamestate Evt Process Methods
   processGamestateEvent(gamestateEvt) {
 
+    this.lastEventMessage = Date.now();
     const currentConnectionState = this.gsParser.getConnectionState(gamestateEvt);
 
     this.processConnectionState(gamestateEvt, currentConnectionState);
@@ -191,6 +222,10 @@ class GamestateManager {
 
   subscribeToMatchDisconnect(handlerFunc) {
     this.onDisconnectedFromMatch.on(evtLvl, handlerFunc);
+  }
+
+  subscribeToClientDisconnect(handlerFunc) {
+    this.onDisconnectedFromClient.on(evtLvl, handlerFunc);
   }
 }
 
