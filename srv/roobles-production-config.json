@@ -10,7 +10,7 @@
     "InstallDir": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Counter-Strike Global Offensive"
   },
   "Logging": {
-    "LogLevel": 1
+    "LogLevel": 2
   },
   "Gamestate": {
     "Logging": {
