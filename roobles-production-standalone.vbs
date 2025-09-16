@@ -2,8 +2,8 @@
 Dim ratz, ratzSet, ratzChance
 Dim matchRegex, tournRegex, coreRegexVal, quoteRegex
 Dim winWidth, winHeight, inputForm, outputForm, scriptDir, mediaDir, statsDir
-Dim logoScript, statScript, stdOutFile, ratzFile, statsFile, configFile
-Dim logoSaveScriptName, statGetScriptName, stdOutFileName, ratzFileName
+Dim logoScript, statScript, serviceScript, stdOutFile, ratzFile, statsFile, configFile
+Dim logoSaveScriptName, statGetScriptName, serviceScriptName, stdOutFileName, ratzFileName
 Dim faceitIdType
 Const faceit_type_unknown = 0, faceit_type_match = 1, faceit_type_tourn = 2
 Const ForReading = 1, ForWriting = 2, ForAppending = 8
@@ -13,6 +13,7 @@ winHeight = 1000
 
 logoSaveScriptName = "save-team-logo.sh"
 statGetScriptName = "get-match-stats.sh"
+serviceScriptName = "roobles-production-ctl.sh"
 stdOutFileName = "stdout.txt"
 ratzFileName = "web.ratz"
 
@@ -50,6 +51,7 @@ mediaDir = scriptDir + "\media"
 statsDir = scriptDir + "\stats"
 logoScript = scriptDir + "\" + logoSaveScriptName
 statScript = scriptDir + "\" + statGetScriptName
+serviceScript = scriptDir + "\" + serviceScriptName
 stdOutFile = scriptDir + "\" + stdOutFileName
 ratzFile = mediaDir + "\" + ratzFileName
 statsFile = statsDir + "\stats.js"
@@ -329,6 +331,23 @@ Sub BrowseForLogoDir
     inputForm.logoDir.value = browseResult
     SaveConfig browseResult, Null
   End If
+End Sub
+
+
+' ------------------ Service
+Sub LaunchNodeService
+  Dim launchCmd
+
+
+  launchCmd = """" + serviceScript + """ -S"
+  RunShellScript launchCmd
+End Sub
+
+Sub KillNodeService
+  Dim launchCmd
+
+  launchCmd = """" + serviceScript + """ -K"
+  RunShellScript launchCmd
 End Sub
 
 

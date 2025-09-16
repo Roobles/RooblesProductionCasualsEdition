@@ -1,0 +1,21 @@
+{
+  "CoachFix": {
+    "RemapNumberKeys" : false
+  },
+  "Http": {
+    "Address": "0.0.0.0",
+    "Port": 4009
+  },
+  "CounterStrike": {
+    "InstallDir": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Counter-Strike Global Offensive"
+  },
+  "Logging": {
+    "LogLevel": 1
+  },
+  "Gamestate": {
+    "Logging": {
+      "Enabled": false,
+      "Directory": "D:\\tmp\\GSI"
+    }
+  }
+}  
