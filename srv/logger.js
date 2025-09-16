@@ -6,33 +6,34 @@ const LogLevels = {
   ERROR: 4
 };
 
+const Colors = {
+  None: "0m",
+  Red: "31m",
+  Green: "32m",
+  Yellow: "33m",
+  White: "97m"
+}
+
+class LogDecoration {
+  constructor(label, colorCode) {
+    this.label = label;
+    this.colorCode = colorCode;
+  }
+
+  print() {
+    return `${this.setColor(this.colorCode)}[${this.label}]${this.setColor(Colors.None)}`;
+  }
+
+  setColor(colorCode) {
+    return `\x1b[${colorCode}`;
+  }
+}
+
 class Logger {
   constructor(config) {
     this.config = config;
   }
 
-  getLogLevelName(logLevel) {
-
-    switch(logLevel) {
-      case LogLevels.TRACE:
-        return 'Trace';
-
-      case LogLevels.DEBUG:
-        return 'Debug';
-
-      case LogLevels.INFO:
-        return 'Info';
-
-      case LogLevels.WARN:
-        return 'Warn';
-
-      case LogLevels.ERROR:
-        return 'Error';
-
-      default:
-        return 'Unknown';
-    }
-  }
 
   errorDrop(errObj, message) {
     this.error(message);
@@ -101,10 +102,8 @@ class Logger {
       return;
 
     const isError = (logLevel >= LogLevels.Error);
-    const labelName = this.getLogLevelName(logLevel);
-
     const mVal = includeLabel 
-      ? `[${labelName}] ${message}`
+      ? `${this.getLogDecoration(logLevel).print()} ${message}`
       : message;
 
     // TODO: Remove this.
@@ -120,6 +119,30 @@ class Logger {
     writeLog(mVal);
     return undefined;
   }
+
+  getLogDecoration(logLevel) {
+
+    switch(logLevel) {
+      case LogLevels.TRACE:
+        return new LogDecoration('Trace', Colors.None);
+
+      case LogLevels.DEBUG:
+        return new LogDecoration('Debug', Colors.White);
+
+      case LogLevels.INFO:
+        return new LogDecoration('Info', Colors.Green);
+
+      case LogLevels.WARN:
+        return new LogDecoration('Warn', Colors.Yellow);
+
+      case LogLevels.ERROR:
+        return new LogDecoration('Error', Colors.Red);
+
+      default:
+        return new LogDecoration('Unknown', Colors.None);
+    }
+  }
+
 }
 
 module.exports = {

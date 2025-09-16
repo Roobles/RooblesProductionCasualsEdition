@@ -29,6 +29,7 @@ class RooblesProductionManager {
     switch(sts) {
       case 'Stop':
         this.shutdown();
+        break;
 
       default:
         this.logger.warn(`Unknown Service Action Status: ${sts}`);
