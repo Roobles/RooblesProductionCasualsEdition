@@ -11,5 +11,11 @@
   },
   "Logging": {
     "LogLevel": 1
+  },
+  "Gamestate": {
+    "Logging": {
+      "Enabled": false,
+      "Directory": "D:\\tmp\\GSI"
+    }
   }
 }  

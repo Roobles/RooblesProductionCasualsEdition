@@ -7,8 +7,9 @@ const evtLvl = 'event';
 
 class GamestateManager {
 
-  constructor(logger, gamestateParser, gamestateDataset) {
+  constructor(logger, gamestateLogger, gamestateParser, gamestateDataset) {
     this.logger = logger;
+    this.gamestateLogger = gamestateLogger;
     this.gsParser = gamestateParser;
     this.gamestateDataset = gamestateDataset;
     this.lastEventMessage = Date.now();
@@ -119,6 +120,7 @@ class GamestateManager {
   processGamestateEvent(gamestateEvt) {
 
     this.lastEventMessage = Date.now();
+    this.gamestateLogger.logGamestate(gamestateEvt);
     const currentConnectionState = this.gsParser.getConnectionState(gamestateEvt);
 
     this.processConnectionState(gamestateEvt, currentConnectionState);

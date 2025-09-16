@@ -18,6 +18,13 @@ const ObserverSlotKeyBinds = [
   "="
 ];
 
+const DefaultKeyBinds = [
+  "slot1", "slot2", "slot3",
+  "slot4", "slot5", "slot6",
+  "slot7", "slot8", "slot9",
+  "slot10"
+];
+
 class ObservationSet {
   constructor() {
     this.playerSet = new Array(FixRangeUpperBound + 1);
@@ -52,6 +59,7 @@ class ObservationManager {
   init() {
     // Set config value for this behavior.
     this.setPrimaryConfiguration();
+    this.setResetConfiguration();
   }
 
   // ---------------------------------------------------------------  Domain Methods
@@ -72,8 +80,16 @@ class ObservationManager {
   }
 
   setPrimaryConfiguration() {
-    const configFileName = "roobles_production_spec_binds.cfg";
+    const configFileName = "roobles_production_on.cfg";
     const cfgContents = this.buildPrimaryConfiguration();
+
+    this.csManager.writeConfigFile(configFileName, cfgContents);
+  }
+
+  setResetConfiguration() {
+    // TODO: Consider not overwriting if already here.
+    const configFileName = "roobles_production_off.cfg";
+    const cfgContents = this.buildResetConfiguration();
 
     this.csManager.writeConfigFile(configFileName, cfgContents);
   }
@@ -109,23 +125,31 @@ class ObservationManager {
   }
 
   buildOverflowPrimaryConfiguration() {
-    const defaultKeyBinds = [
-      "slot1", "slot2", "slot3",
-      "slot4", "slot5", "slot6",
-      "slot7", "slot8", "slot9",
-      "slot10"
-    ];
-
-    const defaultKeyBindNum = defaultKeyBinds.length;
-    const configLines = this.buildPrimaryConfigurationHeader();
-
-    for(let i=0; i<defaultKeyBindNum; i++)
-      configLines.push(this.buildObserverKeyBinding(i, defaultKeyBinds[i]));
+    const configLines = this.buildDefaultConfigKeyBase();
 
     configLines.push(this.buildRemappedKeyboardExecLine(10));
     configLines.push(this.buildRemappedKeyboardExecLine(11));
 
     return configLines.join("\n");
+  }
+
+  buildResetConfiguration() {
+    const configLines = this.buildDefaultConfigKeyBase();
+
+    configLines.push(this.buildObserverUnmapKey(10));
+    configLines.push(this.buildObserverUnmapKey(11));
+
+    return configLines.join("\n");
+  }
+
+  buildDefaultConfigKeyBase() {
+    const defaultKeyBindNum = DefaultKeyBinds.length;
+    const configLines = this.buildPrimaryConfigurationHeader();
+
+    for(let i=0; i<defaultKeyBindNum; i++)
+      configLines.push(this.buildObserverKeyBinding(i, DefaultKeyBinds[i]));
+
+    return configLines;
   }
 
   buildPrimaryConfigurationHeader() {
@@ -146,6 +170,12 @@ class ObservationManager {
     const bindingKey = this.getBindingKeyByObserverSlot(observerSlot);
 
     return `bind "${bindingKey}" "${bindContents}"`;
+  }
+
+  buildObserverUnmapKey(observerSlot) {
+    const bindingKey = this.getBindingKeyByObserverSlot(observerSlot);
+
+    return `unbind "${bindingKey}"`;
   }
 
   // ---------------------------------------------------------------  Secondary Configurations

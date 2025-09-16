@@ -1,4 +1,5 @@
 const { Logger, LogLevels } = require('./logger.js');
+const { GamestateLogger } = require('./gamestate-logger.js');
 const { ConfigurationManager } = require('./configuration-manager.js');
 const { HttpManager, HttpBinding, HttpVerb } = require('./http-manager.js');
 const { RooblesHeartbeat } = require('./heart-of-the-rat.js');
@@ -14,6 +15,10 @@ class RooblesProductionFactory {
 
   buildLogger(fact) {
     return new Logger(fact.Configuration());
+  }
+
+  buildGamestateLogger(fact) {
+    return new GamestateLogger(fact.Configuration(), fact.Logger(), fact.FileManager());
   }
 
   buildConfigurationManager(fact) {
@@ -46,7 +51,7 @@ class RooblesProductionFactory {
   }
 
   buildGamestateManager(fact) {
-    return new GamestateManager(fact.Logger(), fact.GamestateParser(), fact.GamestateDataset());
+    return new GamestateManager(fact.Logger(), fact.GamestateLogger(), fact.GamestateParser(), fact.GamestateDataset());
   }
 
   buildCsManager(fact) {
@@ -82,6 +87,10 @@ class RooblesProductionFactory {
 
   Logger() {
     return this.lazyLoad(this, 'logger', this.buildLogger);
+  }
+
+  GamestateLogger() {
+    return this.lazyLoad(this, 'gamestateLogger', this.buildGamestateLogger);
   }
 
   ConfigManager() {

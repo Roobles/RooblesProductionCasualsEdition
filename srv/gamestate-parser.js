@@ -38,24 +38,6 @@ class GamestateParser {
     this.logger = logger;
   }
 
-  getConnectionState(gsEvt) {
-    if(gsEvt == undefined)
-      return ConnectionStates.Unknown;
-
-    const disconnectedCompatibleSegments = [
-      DataSegments.Provider,
-      DataSegments.Previously
-    ];
-
-    const gameDataSegments = Object
-      .keys(gsEvt)
-      .filter(k => !disconnectedCompatibleSegments.includes(k));
-
-    return gameDataSegments.length > 0
-      ? ConnectionStates.ConnectedToMatch
-      : ConnectionStates.ConnectedToClient;
-  }
-
   parse(gsEvt) {
     const gsEvents = [];
     if(gsEvt == undefined)
@@ -85,6 +67,26 @@ class GamestateParser {
       Data: eventData
     };
   }
+
+  // ------------------------------- Data Parses
+  getConnectionState(gsEvt) {
+    if(gsEvt == undefined)
+      return ConnectionStates.Unknown;
+
+    const disconnectedCompatibleSegments = [
+      DataSegments.Provider,
+      DataSegments.Previously
+    ];
+
+    const gameDataSegments = Object
+      .keys(gsEvt)
+      .filter(k => !disconnectedCompatibleSegments.includes(k));
+
+    return gameDataSegments.length > 0
+      ? ConnectionStates.ConnectedToMatch
+      : ConnectionStates.ConnectedToClient;
+  }
+
 
   getAllPlayerData(gsEvt) {
     const playerData = [];
