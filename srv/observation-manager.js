@@ -48,10 +48,11 @@ class ObservationManager {
     return this.config.CoachFix.RemapNumberKeys;
   }
   
-  constructor(config, logger, csManager) {
+  constructor(config, logger, csManager, dataReader) {
     this.config = config;
     this.logger = logger;
     this.csManager = csManager;
+    this.dataReader = dataReader;
     this.observationSet = new ObservationSet();
     this.latestChangeArgs = undefined;
   }
@@ -68,15 +69,24 @@ class ObservationManager {
       return;
     
     this.logger.traceObject(this.latestChangeArgs = changeArgs);
-    const changedData = changeArgs.ChangedData;
-    if(changedData == undefined || changedData.length < 1)
+    const playerData = changeArgs.CurrentData;
+
+    this.updateObservationSlotChanges(playerData);
+  }
+
+  updateObservationSlotChanges(playerData = undefined) {
+    if(playerData == undefined)
+      playerData = this.dataReader.getCurrentPlayerData();
+    
+    if(playerData.length < 1)
       return;
 
+    this.logger.debug(`Attempting to update observation slots based on data: ${playerData}`);
     const remapAction = this.shouldRemapKeys()
       ? (ca) => this.setKeyRemapPlayerBindExecs(ca)
       : (ca) => this.setOverflowPlayerBindExecs(ca);
 
-    remapAction(changeArgs);
+    remapAction(playerData);
   }
 
   setPrimaryConfiguration() {
@@ -179,8 +189,8 @@ class ObservationManager {
   }
 
   // ---------------------------------------------------------------  Secondary Configurations
-  setKeyRemapPlayerBindExecs(changeArgs) {
-    const actualPlayers = changeArgs.CurrentData.filter(p => !this.isACoachSlot(p));
+  setKeyRemapPlayerBindExecs(playerData) {
+    const actualPlayers = playerData.filter(p => !this.isACoachSlot(p));
 
     const sortedPlayers = actualPlayers.sort((a,b) => a.ObserverSlot - b.ObserverSlot);
     const playerCount = sortedPlayers.length;
@@ -196,8 +206,8 @@ class ObservationManager {
     }
   }
 
-  setOverflowPlayerBindExecs(changeArgs) {
-    const playerFixes = changeArgs.CurrentData.filter(p => !this.isACoachSlot(p) && this.isOutOfBounds(p) && this.isUpdatedPlayer(p));
+  setOverflowPlayerBindExecs(playerData) {
+    const playerFixes = playerData.filter(p => !this.isACoachSlot(p) && this.isOutOfBounds(p) && this.isUpdatedPlayer(p));
     if(playerFixes.length < 1)
       return;
 

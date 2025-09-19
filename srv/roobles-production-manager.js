@@ -40,6 +40,10 @@ class RooblesProductionManager {
     return this.observerManager.getMappedPlayers();
   }
 
+  updateObservablePlayers() {
+    this.observerManager.updateObservationSlotChanges();
+  }
+
   getLatestObservationEvent() {
     return this.observerManager.getLatestObservationEvent();
   }
@@ -55,6 +59,7 @@ class RooblesProductionManager {
       new HttpBinding('/roobles/api', HttpVerb.GET, () => this.getHttpBindings()),
       new HttpBinding('/roobles/config', HttpVerb.GET, () => this.getConfiguration()),
       new HttpBinding('/roobles/gamestate', HttpVerb.GET, () => this.getCurrentGamestate()),
+      new HttpBinding('/roobles/observation/update', HttpVerb.POST, () => this.updateObservablePlayers()),
       new HttpBinding('/roobles/observation/players', HttpVerb.GET, () => this.getObservablePlayers()),
       new HttpBinding('/roobles/observation/events/latest', HttpVerb.GET, () => this.getLatestObservationEvent())
     ];
@@ -76,6 +81,7 @@ class RooblesProductionManager {
 
   initEventHandlers() {
     this.gamestateManager.subscribeToObserveSlotChange(dta => this.observerManager.processObservationSlotChanges(dta));
+    this.gamestateManager.subscribeToMatchConnection(dta => this.updateObservablePlayers());
   }
 
   init() {

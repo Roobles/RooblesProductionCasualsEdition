@@ -113,7 +113,18 @@ class GamestateDataset {
   }
 }
 
+class GamestateReader {
+  constructor(gsDataset) {
+    this.gsDataset = gsDataset;
+  }
+
+  getCurrentPlayerData() {
+    return this.gsDataset.getCurrentPlayerData();
+  }
+}
+
 module.exports = {
   GamestateDataset: GamestateDataset,
+  GamestateReader: GamestateReader,
   ConnectionStatuses: ConnectionStatuses
 };

@@ -9,7 +9,7 @@ const { GamestateManager } = require('./gamestate-manager.js');
 const { CsManager } = require('./cs-manager.js');
 const { ObservationManager } = require('./observation-manager.js');
 const { RooblesProductionManager } = require('./roobles-production-manager.js');
-const { GamestateDataset } = require('./gamestate-dataset.js');
+const { GamestateDataset, GamestateReader } = require('./gamestate-dataset.js');
 
 class RooblesProductionFactory {
 
@@ -38,6 +38,10 @@ class RooblesProductionFactory {
     return new GamestateDataset();
   }
 
+  buildGamestateReader(fact) {
+    return new GamestateReader(fact.GamestateDataset());
+  }
+
   buildHttpManager(fact) {
     return new HttpManager(fact.Configuration(), fact.Logger());
   }
@@ -59,7 +63,7 @@ class RooblesProductionFactory {
   }
 
   buildObservationManager(fact) {
-    return new ObservationManager(fact.Configuration(), fact.Logger(), fact.CsManager());
+    return new ObservationManager(fact.Configuration(), fact.Logger(), fact.CsManager(), fact.GamestateReader());
   }
 
   buildRooblesProductionManager(fact) {
@@ -107,6 +111,10 @@ class RooblesProductionFactory {
 
   GamestateDataset() {
     return this.lazyLoad(this, 'gamestateDataset', this.buildGamestateDataset);
+  }
+
+  GamestateReader() {
+    return this.lazyLoad(this, 'gamestateReader', this.buildGamestateReader);
   }
 
   HttpManager() {

@@ -14,7 +14,7 @@
   },
   "Gamestate": {
     "Logging": {
-      "Enabled": false,
+      "Enabled": true,
       "Directory": "D:\\tmp\\GSI"
     }
   }
